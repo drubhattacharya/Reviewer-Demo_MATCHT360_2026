@@ -2832,96 +2832,358 @@ window.copy_block = async function(id){
 window.generate_impl_plan = function(){
   const opp = state.opportunities?.[0];
   const m = state.model?.outputs;
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const LINE = '━'.repeat(60);
   const txt =
-`Implementation Plan (30-60-90)
+`${LINE}
+NEMT PROGRAM — 30-60-90 DAY IMPLEMENTATION PLAN
+Generated: ${today}
+${LINE}
 
-Selected opportunity: ${opp ? opp.opp : "—"}
-CRA criterion satisfied: ${opp ? opp.criterion : "—"}
+Opportunity: ${opp ? opp.opp : "[Selected opportunity]"}
+CRA criterion: ${opp ? opp.criterion : "[CRA criterion]"}
+${m ? "Target prevented no-shows: "+Math.round(m.prevented).toLocaleString()+" visits/yr | Net benefit: "+fmtMoney(m.net_benefit) : ""}
 
-0–30 days
-- Confirm target geography and eligible population (LMI method) and document AA attribution.
-- Finalize partner/vendor and service workflow (scheduling, eligibility, ride confirmation, documentation).
-- Build the evidence packet template (contracts, invoices, ride logs, beneficiary counts).
+${LINE}
+DAYS 0–30: PROGRAM DESIGN & CONTRACTING
+${LINE}
 
-31–60 days
-- Launch pilot; begin weekly operational monitoring.
-- Collect ride logs, completed visits enabled, cancellations/no-shows, and beneficiary ZIP/tract.
-- Produce first monthly report: volumes, costs, and exceptions.
+ELIGIBILITY & TARGETING
+□ Define LMI eligibility threshold (≤80% AMI, Medicaid enrollment, or hybrid)
+□ Identify high-priority patient segments: prior no-show history, post-discharge
+  patients (TCM window), CCM-enrolled patients with 2+ chronic conditions
+□ Confirm CRA Assessment Area boundaries with bank partner counsel
+□ Baseline measurement: pull 6-month no-show rate by transportation-barrier flag
+  (ICD-10 Z75.3 or staff-coded) for control comparison
 
-61–90 days
-- Compare baseline vs observed: transport-related no-shows prevented.
-- Adjust workflow; document corrective actions.
-- Produce quarterly outcomes report for CRA file and hospital leadership.
+VENDOR SELECTION & CONTRACTING
+□ Issue RFP or select from existing vendor relationships (rideshare, NEMT broker,
+  managed care transportation entity per 42 CFR § 440.170)
+□ Verify vendor drivers: current licenses, criminal background checks, insurance
+  per CMS NEMT Provider Booklet requirements (CMS April 2016)
+□ Confirm vehicles meet state certification requirements; no billing for no-shows
+  (loaded mileage only — false billing is prosecuted under False Claims Act)
+□ Execute Business Associate Agreement (BAA) — required before first trip
+□ Screen vendor and all drivers against OIG LEIE database before contracting;
+  repeat monthly (State Medicaid Director Letter 09-001)
+□ Negotiate SLA: ≥92% on-time pickup, ≤5% vendor-initiated cancellations,
+  100% trip log completion (pickup, dropoff, timestamp, driver ID)
 
-${m ? "\nCurrent ROI baseline:\n- Prevented no-shows: "+Math.round(m.prevented).toLocaleString()+"\n- Net benefit: "+fmtMoney(m.net_benefit) : ""}`;
+DOCUMENTATION INFRASTRUCTURE
+□ Build evidence packet template: ride logs, completed visit confirmations,
+  beneficiary ZIP/tract for AA attribution, LMI verification documentation
+□ Configure SDOH Z-code (Z75.3) screening workflow in EHR for NEMT-enabled visits
+□ Draft CRA justification memo; have legal confirm activity classification
+  under 12 CFR 25.23 (OCC) or 12 CFR 228.23 (Federal Reserve)
+
+${LINE}
+DAYS 31–60: PILOT LAUNCH & WORKFLOW CALIBRATION
+${LINE}
+
+PROGRAM LAUNCH
+□ Begin accepting ride requests; prioritize patients with confirmed appointment +
+  documented transportation barrier or prior no-show history
+□ Establish scheduling workflow: same-day ("stat") and advance booking available
+  per Berkowitz 2022 UNC Health Alliance ACO design (Mon–Fri 8am–5pm standard)
+□ Implement automated SMS ride confirmation and post-ride satisfaction survey
+  (targeting: engagement rates >74%; cf. Chaiyachati 2018 lesson on low uptake)
+
+OPERATIONAL MONITORING
+□ Weekly ops huddle: volumes, on-time pickup rate, cancellations, no-shows
+□ Reconcile ride logs against appointment system weekly
+□ Track Z-code documentation rate at NEMT-enabled visits (target: ≥25% Year 1)
+□ Flag and investigate any vendor documentation gaps (non-compliance = payment hold)
+
+TCM / CCM INTEGRATION
+□ Alert care managers when NEMT-enabled patient has a post-discharge appointment:
+  TCM 2-business-day contact window enabled by confirmed ride
+□ Document all CCM-qualifying non-face-to-face time separately from NEMT trip
+  (travel time is NOT billable; time must be real, threshold-meeting, non-duplicative)
+□ First monthly report: ride volume, completed visits enabled, Z-code capture rate,
+  TCM completions enabled, beneficiary LMI/AA counts
+
+${LINE}
+DAYS 61–90: MEASUREMENT, REPORTING & SCALE DECISION
+${LINE}
+
+OUTCOMES MEASUREMENT
+□ Compare observed no-show rate (NEMT-enrolled) vs. matched control group
+  (propensity matching on age, diagnosis, payer, prior no-show rate)
+□ Measure TCM completion rate improvement: target +15–20 pp (7-day and 14-day)
+□ Calculate FFS contribution margin recovered: prevented × (net revenue − marginal cost)
+□ Assess Z-code documentation completeness; initiate training if <20%
+
+REPORTING
+□ Produce first quarterly outcomes report for CRA file: LMI trips, AA trips,
+  completed visits enabled, no-show rate vs. control, patient satisfaction score
+□ Present to hospital leadership: 3-scenario financial update (conservative/base/optimistic)
+□ Update bank CRA partner with outcomes narrative per agreed reporting frequency
+
+SCALE DECISION INPUTS
+□ Based on 90-day data: confirm mitigation rate assumption vs. observed
+□ Evaluate vendor performance against SLA; issue cure notice if below threshold
+□ Determine whether to expand to additional patient segments, clinics, or geographies
+□ IRB exemption determination for EHR-linked matched-cohort outcomes study
+
+${m ? LINE+`\n3-SCENARIO FINANCIAL SUMMARY\n`+LINE+`\n  Conservative: FFS base = ${fmtMoney(m.net_benefit)} net (high confidence)\n  Add TCM uplift if 7/14-day completion improves by ≥15 pp\n  Full model when CCM enrollment ramp and VBC attribution confirmed` : ""}
+${LINE}
+Evidence base: Berkowitz et al. (2022, Health Affairs 41(3):406-413) · Shekelle et al. (2022, BMC Public Health)
+CMS NEMT Provider Booklet (April 2016) · 42 CFR §§ 431.53, 440.170 · OIG LEIE (oig.hhs.gov)
+${LINE}`;
   document.getElementById("impl_plan").textContent = txt;
 };
 
 window.generate_outcomes_report = function(){
   const opp = state.opportunities?.[0];
   const m = state.model?.outputs;
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const LINE = '━'.repeat(60);
   const txt =
-`Quarterly Outcomes Report Template
+`${LINE}
+NEMT PROGRAM — QUARTERLY OUTCOMES REPORT TEMPLATE
+${LINE}
+Project: ${opp ? opp.opp : "[Selected opportunity]"}
+Reporting Period: [Q___ 20__] | Prepared: ${today}
+Reporting Frequency: As agreed with CRA bank partner
 
-Project: ${opp ? opp.opp : "—"}
-Reporting period: ___________________
+${LINE}
+SECTION 1 — OPERATIONAL OUTPUTS
+${LINE}
 
-Operational Outputs
-- Trips delivered (round trips): ${m ? Math.round(m.trips).toLocaleString() : "—"}
-- Completed visits enabled: ${m ? Math.round(m.prevented).toLocaleString() : "—"}
-- Cancellation rate: _______
-- On-time pickup rate: _______
+Trip Volume
+  Trips scheduled:                   ________
+  Trips completed (loaded mileage):  ${m ? Math.round(m.trips).toLocaleString() : "________"}  ← target
+  Vendor-initiated cancellations:    ________  (target: ≤5%)
+  Patient no-shows:                  ________  (not billable; document separately)
+  On-time pickup rate (within 10 min): ______  (target: ≥92%)
+  Same-day "stat" trips:             ________
 
-Beneficiary & Scope (CRA)
-- % LMI: _______   (method: _______)
-- LMI trips: ${m ? Math.round(m.lmi_trips).toLocaleString() : "—"}
-- % within AA: _______
-- AA trips: ${m ? Math.round(m.aa_trips).toLocaleString() : "—"}
+NOTE: Providers should only bill for loaded mileage — trips where beneficiary
+was physically in the vehicle. Claiming no-show trips is fraud under the False
+Claims Act (CMS NEMT Provider Booklet, April 2016).
 
-Financial (Hospital)
-- Gross revenue recaptured: ${m ? fmtMoney(m.gross_rev) : "—"}
-- Total program cost: ${m ? fmtMoney(m.total_program_cost) : "—"}
-- Net annual benefit (base): ${m ? fmtMoney(m.net_benefit) : "—"}
+Visit Completion
+  NEMT-enabled completed visits:     ${m ? Math.round(m.prevented).toLocaleString() : "________"}  ← modeled target
+  Baseline no-show rate (pre-program): _______%
+  Observed no-show rate (NEMT cohort): _______%
+  Estimated no-show reduction:        _______%  (cf. meta-analytic target: 37%; Shekelle 2022)
 
-Narrative
-- Describe responsiveness to documented CHNA need and any adjustments made.
-`;
+${LINE}
+SECTION 2 — BENEFICIARY & CRA SCOPE
+${LINE}
+
+LMI Documentation
+  Total unduplicated beneficiaries served:  ________
+  % meeting LMI threshold (≤80% AMI):       _______%
+  Verification method: ___________________________
+    (Medicaid enrollment / self-attestation / census tract)
+  LMI trips (for CRA file):                 ${m ? Math.round(m.lmi_trips).toLocaleString() : "________"}  ← modeled
+
+Assessment Area Confirmation
+  % of trips within CRA Assessment Area:    _______%
+  AA trips (confirmed in-boundary):         ${m ? Math.round(m.aa_trips).toLocaleString() : "________"}  ← modeled
+  Bank $/LMI trip:                          $______  (= bank contribution / LMI trips)
+
+Special Populations Served
+  Adults with disabilities:   ________ patients  (______%)
+  Post-discharge (TCM-eligible): ________ patients
+  CCM-enrolled chronic disease:  ________ patients
+  Medicaid/dual-eligible:        ________ patients
+
+${LINE}
+SECTION 3 — CLINICAL & QUALITY OUTCOMES
+${LINE}
+
+SDOH Documentation
+  Z75.3 documentation rate (NEMT-enabled visits):  _______%  (target: ≥25% Yr1; ≥60% Yr2)
+  Encounters with SDOH screening completed:        ________
+
+TCM Integration (if applicable)
+  Post-discharge patients offered NEMT:            ________
+  TCM 7-day face-to-face completions (99496):     ________  (${m ? "modeled target: "+Math.round((m.tcmNet||0)/273*0.35).toLocaleString() : "—"})
+  TCM 14-day face-to-face completions (99495):    ________
+  TCM completion rate with NEMT:                  _______%
+  30-day readmission rate (TCM cohort):           _______%  (national benchmark: ~15%; TCM reduces by ~0.31 pp)
+
+CCM Integration (if applicable)
+  CCM-enrolled patients using NEMT:               ________
+  Months with ≥20 min qualifying CCM time:       ________
+  CCM billing success rate:                       _______%
+
+Quality Measure Impacts (document with QI team)
+  QPP Measure 001 (Diabetes HbA1c >9%):  Baseline ____% → Current ____%
+  QPP Measure 236 (BP Control):          Baseline ____% → Current ____%
+  Transitions of Care (Star/ACO REACH):  Baseline ____% → Current ____%
+
+${LINE}
+SECTION 4 — FINANCIAL SUMMARY (HOSPITAL)
+${LINE}
+
+  Gross revenue recaptured (FFS):    ${m ? fmtMoney(m.gross_rev) : "________"}
+  Total program cost (trips + overhead): ${m ? fmtMoney(m.total_program_cost) : "________"}
+  Net annual benefit (base case):    ${m ? fmtMoney(m.net_benefit) : "________"}
+  Bank CRA contribution (offset):    $________ (per partnership agreement)
+  Net cash outlay to health system:  $________
+
+${LINE}
+SECTION 5 — NARRATIVE (CUSTOMIZE)
+${LINE}
+Describe: (1) how this quarter's activity responds to the documented CHNA need;
+          (2) any workflow adjustments and their rationale;
+          (3) vendor performance vs. SLA thresholds;
+          (4) any compliance exceptions and corrective actions taken.
+
+[Insert narrative here]
+
+${LINE}
+Evidence base: Berkowitz et al. (2022, Health Affairs) · Shekelle et al. (2022, BMC Public Health)
+CMS NEMT Provider Booklet (April 2016) · CMS MLN CCM/TCM Booklets
+${LINE}`;
   document.getElementById("outcomes_report").textContent = txt;
 };
 
 window.generate_eval_plan = function(){
   const opp = state.opportunities?.[0];
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const LINE = '━'.repeat(60);
   const txt =
-`Evaluation Plan Template
+`${LINE}
+NEMT PROGRAM — EVALUATION PLAN & METHODOLOGY
+${LINE}
+Project: ${opp ? opp.opp : "[Selected opportunity]"}
+Generated: ${today}
 
-1) Purpose
-Evaluate whether the intervention reduces transport-related missed appointments and improves access for the target population.
+${LINE}
+1. PURPOSE & EVALUATION QUESTIONS
+${LINE}
 
-2) Baseline
-- Baseline no-show rate (overall): _______
-- Transport-attributable no-show share: _______
-- CHNA evidence citations: ${state.findings?.slice(0,3).map(f=>f.evidenceRef).filter(Boolean).join("; ") || "—"}
+Primary: Does NEMT reduce transportation-attributable no-shows in the target population?
+  Q1: What is the no-show rate reduction vs. matched controls?
+  Q2: Does NEMT enable TCM 7/14-day face-to-face completion?
+  Q3: Does NEMT improve CCM monthly contact window completion?
 
-3) Design
-- Pre/post comparison (baseline period vs intervention period)
-- Stratify by: age group (65–74), LMI status, and geography (AA)
+Secondary: Does NEMT improve downstream clinical and financial outcomes?
+  Q4: Does 30-day readmission rate decrease in the TCM-enabled subgroup?
+  Q5: Do quality measure rates improve (Measures 001, 236, TCM/Transitions)?
+  Q6: Is the program cost-saving or cost-neutral over 3 years?
 
-4) Metrics
-- Primary: prevented no-shows, trips delivered, completed visits enabled
-- Secondary: downstream utilization proxies (optional), patient experience, timeliness
-- CRA: LMI trips, AA trips, bank $/LMI trip
+Evidence context: Berkowitz et al. (2022) found NEMT increased outpatient visits
+(+9.2/person/yr) but was NOT cost-saving in a Medicare ACO. This plan is designed
+to test whether a targeted (TCM/CCM-linked) program can achieve cost-neutrality
+by combining FFS recovery with care management billing.
 
-5) Data sources
-- Scheduling system, ride logs, billing/RVUs, SDOH screening/Z-codes (if enabled)
+${LINE}
+2. BASELINE MEASUREMENT
+${LINE}
 
-6) Governance & cadence
-- Weekly ops huddle, monthly reporting, quarterly executive review
-- Corrective action triggers: missed pickup rate, high cancellations, documentation gaps
+Pre-program baselines to establish before launch:
+  □ Overall no-show rate (6-month lookback): _______%
+  □ Transportation-attributable share (Z75.3 or staff flag): _______%
+  □ TCM eligible discharges/quarter: ________
+  □ TCM face-to-face completion rate (7-day / 14-day): _______%
+  □ CCM enrollment rate among eligible patients: _______%
+  □ HbA1c >9% rate (Measure 001): _______%
+  □ BP controlled rate (Measure 236): _______%
+  □ 30-day readmission rate (overall / TCM subgroup): _______%
 
-7) Deliverables
-- Quarterly outcomes report
-- Year-end evaluation report with lessons learned and scaling recommendation
-`;
+CHNA evidence citations:
+  ${state.findings?.slice(0,3).map(f=>f.evidenceRef).filter(Boolean).join("; ") || "[Upload CHNA to generate citations]"}
+
+${LINE}
+3. STUDY DESIGN
+${LINE}
+
+Design: Difference-in-differences (DiD) with propensity-score matched controls
+  (Replicates Berkowitz et al. 2022 high-dimensional propensity score approach)
+
+Intervention group: Patients enrolled in NEMT program
+Control group: Patients matched 1:3 on age (±5 yr), primary diagnosis,
+  insurance type, prior-year no-show rate, and distance from clinic
+
+Matching variables (predetermined):
+  Age, sex, race/ethnicity, primary diagnosis (ICD-10),
+  payer type (Medicare/Medicaid/commercial), HCC score,
+  prior 6-month hospitalization count, prior no-show rate,
+  dual eligibility status, disability indicator, distance from clinic
+
+Index date: Date of first NEMT-enabled appointment
+Follow-up: 24 months (sufficient to capture CCM ramp and VBC attribution lag)
+Statistical method: Overlap weighting (ATO estimand) for causal inference
+  on imbalanced observational data — avoids extrapolation beyond the overlap region
+
+${LINE}
+4. METRICS & TARGETS
+${LINE}
+
+PRIMARY (power: 80% to detect 7% absolute reduction; α=0.05)
+  □ Transportation-attributable no-show rate (NEMT vs. control)
+    Target: ≥35% odds reduction (cf. OR 0.63; Shekelle 2022 meta-analysis)
+  □ TCM 7/14-day face-to-face completion rate improvement
+    Target: +15–20 percentage points (NEMT removes primary access barrier)
+
+SECONDARY (24-month follow-up)
+  □ 30-day all-cause readmission rate (TCM subgroup)
+    Reference: Follow-up within 30 days → 32% RRR (Balasubramanian 2025)
+  □ HbA1c >9% rate (Measure 001) — NEMT-enabled visits create documentation opportunity
+  □ BP controlled rate (Measure 236) — requires in-person BP measurement
+  □ SDOH Z75.3 documentation rate: target ≥25% Yr1, ≥60% Yr2
+  □ Patient-reported confidence in keeping appointments (survey, 1–10 scale)
+
+FINANCIAL
+  □ FFS contribution margin recovered vs. program cost
+  □ CCM/TCM incremental billing vs. labor cost
+  □ Bank CRA contribution as % of total program cost
+  □ Break-even sensitivity: actual vs. modeled mitigation rate
+
+CRA METRICS (for bank exam file)
+  □ LMI trips (unduplicated and total)
+  □ AA-confirmed trips
+  □ Bank $/LMI trip delivered
+
+${LINE}
+5. DATA SOURCES
+${LINE}
+  □ Scheduling system: appointment bookings, no-shows, cancellations
+  □ Vendor trip logs: loaded mileage, pickup times, driver IDs, patient confirmations
+  □ EHR/billing: ICD-10, CPT codes, revenue, Z-codes (SDOH), CCM/TCM claims
+  □ Medicare/Medicaid claims (for readmission, quality measure data)
+  □ LMI verification documentation: Medicaid enrollment records
+  □ Patient satisfaction survey: post-ride SMS or follow-up call (3-question)
+
+Fraud prevention note: All vendor trip logs must be reconcilable with appointment
+system records. Discrepancies (billing for no-shows, upcoded vehicle type, unqualified
+drivers) trigger immediate audit. Monthly OIG LEIE screening of all vendor personnel.
+
+${LINE}
+6. GOVERNANCE & CADENCE
+${LINE}
+  Weekly:  Ops huddle — on-time pickup rate, cancellations, documentation gaps
+  Monthly: Outcomes report — volumes, LMI/AA counts, Z-code capture rate
+  Quarterly: Leadership report — financial performance, clinical outcomes, CRA narrative
+  Annual: Full evaluation report — study results, ROI vs. model, lessons learned
+
+Corrective action triggers:
+  • On-time pickup <88%: 30-day cure notice to vendor
+  • No-show billing detected: immediate payment hold; OIG referral if willful
+  • Z-code documentation <15%: workflow training intervention within 14 days
+  • TCM completion improvement <5 pp at 90 days: re-examine patient targeting criteria
+
+${LINE}
+7. PUBLICATION PATHWAY (OPTIONAL)
+${LINE}
+  Target journal: Health Affairs, JAMA Network Open, or BMC Public Health
+  Precedent: Berkowitz et al. (2022) published UNC Health Alliance ACO NEMT evaluation
+  Design advantage: Targeted program (TCM/CCM-linked) tests a more specific hypothesis
+    than the universal Berkowitz program — improves on prior evidence
+  IRB pathway: Quality Improvement / Program Evaluation — likely exempt
+    (45 CFR 46.104(d)(4)); confirm with IRB at program launch
+  Publication target: Year 2 (with 18 months of follow-up data)
+
+${LINE}
+Evidence base: Berkowitz et al. (2022, Health Affairs 41(3):406-413)
+Shekelle et al. (2022, BMC Public Health) · Balasubramanian et al. (2025, JAMA Network Open)
+Chaiyachati et al. (2018, JAMA Internal Medicine) · CMS NEMT Provider Booklet (April 2016)
+${LINE}`;
   document.getElementById("eval_plan").textContent = txt;
 };
 
@@ -3317,7 +3579,7 @@ window.generateMayoDraft = function(type) {
   let title = '', doc = '';
 
   if (type === 'proforma') {
-    title = '3-Year Pro Forma & Program P&L \u2014 Mayo Clinic Olmsted NEMT';
+    title = '3-Year Pro Forma & Program P&L \u2014 NEMT Program';
     // Year 1: FFS only, partial CCM, partial coding; Year 2: full; Year 3: mature
     const y1val = ffsNet + codNet*0.57 + ccmNet*0.37 + tcmNet*0.78;
     const y2val = ffsNet*1.10 + codNet + ccmNet + tcmNet + vbcNet*0.57;
@@ -3329,11 +3591,11 @@ window.generateMayoDraft = function(type) {
     doc = 'CONFIDENTIAL DRAFT \u2014 FOR FINANCE AND LEGAL REVIEW\n'
         + LINE + '\n'
         + '3-YEAR PRO FORMA & PROGRAM P&L\n'
-        + 'NEMT PROGRAM \u2014 MAYO CLINIC IN ROCHESTER / OLMSTED COUNTY\n'
+        + 'NEMT PROGRAM \u2014 [YOUR HEALTH SYSTEM / SERVICE AREA]\n'
         + LINE + '\n\n'
         + 'Generated: ' + today + '\n'
         + 'Scenario: Base Case (FFS + Coding + CCM/TCM; VBC at 57% credit Year 2)\n'
-        + 'Population: Olmsted County LMI ambulatory patients (REP-linked cohort)\n\n'
+        + 'Population: LMI ambulatory patients within your CRA Assessment Area\n\n'
         + LINE + '\n'
         + 'SECTION 1 \u2014 REVENUE WATERFALL BY LAYER\n'
         + LINE + '\n\n'
@@ -3379,7 +3641,7 @@ window.generateMayoDraft = function(type) {
         + '  \u2022 VBC earn-back credited at 50% in Year 2, 100% in Year 3 (attribution lag)\n'
         + '  \u2022 Cost ramp: vendor rate escalation 5%/yr; staff time increases with scale\n'
         + '  \u2022 Bank CRA contribution assumed constant; renew at Year 3 contract reset\n'
-        + '  \u2022 REP study cohort enrollment begins Year 1; primary outcomes reportable Year 2\n\n'
+        + '  \u2022 Outcomes study cohort enrollment begins Year 1; primary outcomes reportable Year 2\n\n'
         + 'SECTION 5 \u2014 DOWNSIDE CASE (30% Mitigation, FFS Only, No CRA Offset)\n'
         + '\u2500'.repeat(52) + '\n'
         + '  Year 1 net: $' + Math.round(Math.max(0, V*D.n*D.s*0.30*(D.r-D.c) - V*D.n*D.s*0.30*D.t*(1+D.o))).toLocaleString() + '\n'
@@ -3389,30 +3651,29 @@ window.generateMayoDraft = function(type) {
         + 'CONFIDENTIAL DRAFT. Review with finance, legal, and compliance before distribution.\n';
 
   } else if (type === 'memo') {
-    title = 'CRA Activity Justification Memo \u2014 Preview';
+    title = 'CRA Activity Justification Memo \u2014 [Your Health System]';
     doc = 'CONFIDENTIAL DRAFT \u2014 FOR LEGAL REVIEW BEFORE DISTRIBUTION\n'
         + LINE + '\n'
         + 'CRA COMMUNITY DEVELOPMENT ACTIVITY JUSTIFICATION MEMORANDUM\n'
         + LINE + '\n\n'
         + 'TO:    ' + bank + ' \u2014 Community Development / CRA Officer\n'
-        + 'FROM:  Mayo Clinic in Rochester \u2014 Community Engagement Office\n'
+        + 'FROM:  [Health System] \u2014 Community Engagement / Population Health Office\n'
         + 'DATE:  ' + today + '\n'
-        + 'RE:    Olmsted County NEMT Program \u2014 Rochester MSA Assessment Area\n\n'
+        + 'RE:    [Service Area] NEMT Program \u2014 [MSA/County] CRA Assessment Area\n\n'
         + LINE + '\n'
         + 'SECTION 1 \u2014 CHNA CITATION & COMMUNITY HEALTH NEED\n'
         + LINE + '\n\n'
         + 'CHNA Document:\n'
-        + '  2025 Community Health Needs Assessment \u2014 Olmsted County, MN.\n'
-        + '  Released October 7, 2025. Produced by Olmsted County Public Health\n'
-        + '  Services, Mayo Clinic in Rochester, and Olmsted Medical Center.\n'
-        + '  URL: storymaps.arcgis.com/collections/7651105f080c418891d71862b91ed210\n\n'
-        + '2025 Priorities Addressed:\n'
-        + '  #1 Access to Care \u2014 34% of adults delayed care; 15% lack a PCP;\n'
-        + '     disability (9.7%) and foreign-born (11.1%) face transport barriers.\n'
-        + '  #2 Mental Health  \u2014 37% prevalence; depression rate (28%) exceeds\n'
-        + '     MN (23%) and U.S. (22%) benchmarks; renter/disability concentration.\n'
-        + '  #3 Food Security  \u2014 33,000 Channel One clients; 23% Hispanic,\n'
-        + '     14% Black; co-occurring transport-barrier population.\n\n'
+        + '  [Your Organization] Community Health Needs Assessment \u2014 [Year/Release Date].\n'
+        + '  Produced by [Co-authoring organizations]. Available at: [URL].\n'
+        + '  Replace this section with your actual CHNA citation.\n\n'
+        + 'CHNA Priorities Addressed (replace with your findings):\n'
+        + '  #[N] Access to Care \u2014 [X]% of [Population] delayed care; [Y]% lack a PCP;\n'
+        + '       disability + LMI populations face documented transport barriers.\n'
+        + '  #[N] Chronic Disease / Behavioral Health \u2014 [X]% prevalence;\n'
+        + '       missed appointments worsen glycemic control and BP management.\n'
+        + '  #[N] Social Determinants \u2014 Co-occurring transport, food, and housing\n'
+        + '       barriers documented in LMI census tracts within your service area.\n\n'
         + 'Statement of Need:\n' + need + '\n\n'
         + LINE + '\n'
         + 'SECTION 2 \u2014 ACTIVITY DESCRIPTION & BANK ROLE\n'
@@ -3420,22 +3681,23 @@ window.generateMayoDraft = function(type) {
         + 'Activity Type: ' + actType + '\n\n'
         + activity + '\n\n'
         + 'Assessment Area Confirmation:\n'
-        + '  Rochester MSA CRA Assessment Area = all of Olmsted County +\n'
-        + '  all of Dodge County, MN (OCC-confirmed). All program beneficiaries\n'
-        + '  are Olmsted County residents served at Mayo Clinic facilities.\n\n'
+        + '  [MSA/County] CRA Assessment Area = [your OCC-confirmed AA geography].\n'
+        + '  All program beneficiaries are [Service Area] residents served at\n'
+        + '  [Health System] facilities. Confirm AA boundaries with counsel.\n\n'
         + LINE + '\n'
         + 'SECTION 3 \u2014 LMI POPULATION DOCUMENTATION\n'
         + LINE + '\n\n'
         + 'Eligibility Threshold: ' + lmi + '\n'
         + 'Verification Method:   ' + verify + '\n'
-        + 'Olmsted County median HH income: $87,856 (2023 Census)\n'
-        + 'Poverty rate: 7.9% (~13,000 residents below poverty threshold)\n\n'
-        + 'Special Populations (2025 CHNA-documented):\n'
-        + '  \u2022 Adults with disabilities: 9.7% of Olmsted County (~16,000)\n'
-        + '  \u2022 Foreign-born residents: 11.1% \u2014 language/navigation barriers\n'
-        + '  \u2022 Renters: higher mental health disparities + transport dependence\n'
-        + '  \u2022 Uninsured (Salvation Army Good Samaritan Clinic, 4,000+ patients)\n'
-        + '  \u2022 LGBTQIA+ residents \u2014 documented healthcare access disparities\n\n'
+        + '[County/MSA] median HH income: [$ from Census] ([Year] ACS)\n'
+        + 'Poverty rate: [X]% ([N] residents below poverty threshold)\n\n'
+        + 'Special Populations (your CHNA-documented — replace with actual data):\n'
+        + '  \u2022 Adults with disabilities \u2014 highest NEMT need; documented access barriers\n'
+        + '  \u2022 Non-English speakers \u2014 language + navigation barriers compound transport gap\n'
+        + '  \u2022 Medicaid/dual-eligible patients \u2014 coverage gaps persist for some populations\n'
+        + '  \u2022 Uninsured / safety-net patients \u2014 highest unmet transportation need\n'
+        + '  \u2022 Post-discharge patients \u2014 TCM face-to-face requirement; transport barriers\n'
+        + '     directly increase readmission risk (Balasubramanian et al. 2025: 32% RRR)\n\n'
         + LINE + '\n'
         + 'SECTION 4 \u2014 MEASURABLE OUTCOMES & ROI SUMMARY\n'
         + LINE + '\n\n'
@@ -3443,7 +3705,7 @@ window.generateMayoDraft = function(type) {
         + 'Net Annual Value:          ' + fmt(totalNet) + '\n'
         + 'Break-even Trip Cost:      $' + beTrip + '/round trip\n\n'
         + 'Primary Outcome Metrics:\n' + outcomes + '\n\n'
-        + 'REP Study Design:\n' + rep + '\n\n'
+        + 'Outcomes Study Design (EHR-Linked Matched Cohort):\n' + rep + '\n\n'
         + LINE + '\n'
         + 'SECTION 5 \u2014 FINANCIAL STRUCTURE & TERM SHEET\n'
         + LINE + '\n\n'
@@ -3456,25 +3718,24 @@ window.generateMayoDraft = function(type) {
         + 'CONFIDENTIAL DRAFT. Review with legal and compliance before distribution.\n';
 
   } else if (type === 'term') {
-    title = 'Bank Term Sheet / Pitch Brief \u2014 Preview';
+    title = 'Bank Term Sheet / Pitch Brief \u2014 [Your Health System] NEMT';
     doc = 'CONFIDENTIAL DRAFT \u2014 FOR REVIEW BEFORE DISTRIBUTION\n'
         + LINE + '\n'
         + 'NEMT PROGRAM \u2014 BANK PARTNERSHIP TERM SHEET & PITCH BRIEF\n'
-        + 'Mayo Clinic in Rochester + Olmsted County NEMT Initiative\n'
+        + '[Health System] + [Service Area] NEMT Initiative\n'
         + LINE + '\n\n'
         + 'Prepared for: ' + bank + '\n'
         + 'Date: ' + today + '\n\n'
         + LINE + '\n'
         + 'EXECUTIVE SUMMARY\n'
         + LINE + '\n\n'
-        + 'Mayo Clinic is the largest employer in Olmsted County and the anchor\n'
-        + 'institution of the Rochester MSA. This NEMT program addresses the\n'
-        + '#1 priority of the 2025 Olmsted County CHNA (Access to Care) by\n'
-        + 'providing free round-trip transportation for LMI patients to Mayo\n'
-        + 'ambulatory facilities.\n\n'
-        + 'A partnership with Mayo Clinic on a documented community health need\n'
+        + '[Health System] is the [anchor institution / largest employer] in [your service area].\n'
+        + 'This NEMT program addresses the #1 priority of the [Year] CHNA ([Priority Name])\n'
+        + 'by providing free round-trip transportation for LMI patients to [Health System]\n'
+        + 'ambulatory facilities within the [MSA/County] CRA Assessment Area.\n\n'
+        + 'A partnership with [Health System] on a documented community health need\n'
         + 'is a marquee CRA exam file relationship for any bank operating in the\n'
-        + 'Rochester MSA Assessment Area.\n\n'
+        + '[MSA/County] Assessment Area.\n\n'
         + LINE + '\n'
         + 'PROPOSED FINANCIAL STRUCTURE\n'
         + LINE + '\n\n'
@@ -3499,13 +3760,12 @@ window.generateMayoDraft = function(type) {
         + LINE + '\n\n'
         + '  1. CRA exam credit: Qualifies as community development activity\n'
         + '     under Access to Care / LMI health services provision.\n\n'
-        + '  2. Marquee institutional relationship: Mayo Clinic is Olmsted\n'
-        + '     County\'s largest employer. OCC examiners recognize high-profile\n'
-        + '     partnerships with major medical institutions.\n\n'
-        + '  3. National evidence generation: Mayo will conduct a Rochester\n'
-        + '     Epidemiology Project matched-cohort study. Bank\'s contribution\n'
-        + '     will be cited in the peer-reviewed publication as enabling the\n'
-        + '     first rigorous matched-cohort NEMT study at a major AMC.\n\n'
+        + '  2. Marquee institutional relationship: [Health System] is the anchor\n'
+        + '     institution of [service area]. OCC examiners recognize high-profile\n'
+        + '     partnerships with major medical institutions and health systems.\n\n'
+        + '  3. National evidence generation: [Health System] will conduct an\n'
+        + '     EHR-linked matched-cohort outcomes study (replicating Berkowitz 2022\n'
+        + '     Health Affairs methodology). Bank will be acknowledged in publication.\n\n'
         + '  4. Multi-year visibility: 3-year term provides consistent qualifying\n'
         + '     activity across 3 annual CRA exam cycles.\n\n'
         + '  5. LMI documentation: Medicaid/CHIP enrollment-based eligibility\n'
@@ -3514,7 +3774,7 @@ window.generateMayoDraft = function(type) {
         + 'PROPOSED ACKNOWLEDGMENT TERMS\n'
         + LINE + '\n\n'
         + '  \u2022 Named acknowledgment in all program materials and reports\n'
-        + '  \u2022 Co-listed in the REP peer-reviewed publication (acknowledgments)\n'
+        + '  \u2022 Acknowledged in the peer-reviewed outcomes publication\n'
         + '  \u2022 Quarterly outcomes report for CRA exam file\n'
         + '  \u2022 Annual joint press release on program milestones\n'
         + '  \u2022 Invitation to program site visit and patient outcomes presentation\n\n'
@@ -3525,7 +3785,7 @@ window.generateMayoDraft = function(type) {
         + '  2. CRA Activity Justification Memo (formal document, available on request)\n'
         + '  3. Term sheet execution and compliance review\n'
         + '  4. Program launch: estimated 90 days post-execution\n\n'
-        + 'Contact: Mayo Clinic in Rochester \u2014 Community Engagement Office\n'
+        + 'Contact: [Health System] \u2014 Community Engagement / Population Health Office\n'
         + LINE + '\n'
         + 'CONFIDENTIAL DRAFT. Review with legal and CRA compliance before distribution.\n';
 
@@ -3543,12 +3803,12 @@ window.generateMayoDraft = function(type) {
         + LINE + '\n'
         + 'THE STRATEGIC CASE\n'
         + LINE + '\n\n'
-        + 'Transportation barriers are the #1 access-to-care issue identified in the\n'
-        + '2025 Olmsted County CHNA. 34% of county adults delayed care; disability\n'
-        + '(9.7%) and foreign-born status (11.1%) compound transport barriers.\n\n'
+        + 'Transportation barriers are the #[N] access-to-care priority identified in the\n'
+        + '[Year] CHNA. Nationally, 25\u201351% of missed appointments are transportation-attributable\n'
+        + 'in LMI populations (Syed et al. 2013; CMS VBID 2023). Replace with your local data.\n\n'
         + 'NEMT directly addresses:\n'
         + '  \u2022 IRS Schedule H / 501(r) community benefit documentation obligations\n'
-        + '  \u2022 CRA community development partnership opportunity (Rochester MSA AA)\n'
+        + '  \u2022 CRA community development partnership opportunity ([MSA/County] AA)\n'
         + '  \u2022 ACO REACH / Medicare quality performance (Transitions of Care,\n'
         + '    Diabetes Glycemic Status, BP Control, Colorectal Screening)\n'
         + '  \u2022 CCM/TCM revenue capture through NEMT-enabled contact windows\n\n'
@@ -3569,7 +3829,7 @@ window.generateMayoDraft = function(type) {
         + '  \u2022 AKS Safe Harbor: Program is structured to meet the 2016 OIG Safe\n'
         + '    Harbor for transportation of LMI patients. Legal review prior to launch.\n'
         + '  \u2022 CRA: Bank contribution qualifies as community development activity\n'
-        + '    under OCC 12 CFR 25.23 — LMI health services, Rochester MSA AA.\n'
+        + '    under OCC 12 CFR 25.23 — LMI health services, [MSA/County] AA.\n'
         + '  \u2022 Schedule H: NEMT program directly implements CHNA Priority #1 (Access\n'
         + '    to Care) per 501(r) / IRS Form 990 Schedule H requirements.\n'
         + '  \u2022 HIPAA/BAA: Full BAA with vendor required before program launch.\n\n'
@@ -3579,7 +3839,7 @@ window.generateMayoDraft = function(type) {
         + 'The Board approves:\n'
         + '  (1) NEMT pilot program at ' + Math.round(V).toLocaleString() + ' targeted visits/year;\n'
         + '  (2) Bank CRA partnership with ' + bank + ' at $' + amount + '/year for ' + term + ' years;\n'
-        + '  (3) Rochester Epidemiology Project study enrollment;\n'
+        + '  (3) Outcomes attribution study enrollment (EHR-linked matched cohort);\n'
         + '  (4) Quarterly board reporting on program KPIs and financial performance.\n\n'
         + 'CONFIDENTIAL DRAFT. Review with legal and finance before distribution.\n';
 
@@ -3588,7 +3848,7 @@ window.generateMayoDraft = function(type) {
     doc = 'NON-EMERGENCY MEDICAL TRANSPORTATION\n'
         + 'VENDOR SERVICE LEVEL AGREEMENT TEMPLATE\n'
         + LINE + '\n\n'
-        + 'Client:   Mayo Clinic in Rochester\n'
+        + 'Client:   [HEALTH SYSTEM NAME]\n'
         + 'Vendor:   [VENDOR NAME]\n'
         + 'Effective Date: [DATE]\n'
         + 'Term: [TERM]\n\n'
@@ -3611,7 +3871,7 @@ window.generateMayoDraft = function(type) {
         + '1.4  SAFETY\n'
         + '     Standard:   Zero tolerance for injury or accident\n'
         + '     Response:   Immediate suspension pending investigation\n'
-        + '     Reporting:  Incident report to Mayo within 24 hours\n\n'
+        + '     Reporting:  Incident report to [Health System] within 24 hours\n\n'
         + '1.5  SERVICE LOG COMPLETENESS\n'
         + '     Standard:   100% of trips logged with timestamp, pickup, dropoff,\n'
         + '                 driver ID, and patient confirmation\n'
@@ -3630,7 +3890,7 @@ window.generateMayoDraft = function(type) {
         + 'ARTICLE 3 \u2014 DOCUMENTATION & AUDIT RIGHTS\n'
         + LINE + '\n\n'
         + '3.1  Vendor shall maintain trip logs for minimum 7 years.\n'
-        + '3.2  Mayo retains right to audit all service logs with 10 business days notice.\n'
+        + '3.2  [Health System] retains right to audit all service logs with 10 business days notice.\n'
         + '3.3  Monthly invoices must reconcile to service logs; disputes resolved within\n'
         + '     30 days of invoice date.\n\n'
         + LINE + '\n'
@@ -3642,35 +3902,35 @@ window.generateMayoDraft = function(type) {
         + '4.4  Termination for cause: 30-day written notice; 5-day notice for safety.\n\n'
         + LINE + '\n'
         + 'Signatures: _________________________  [VENDOR]   Date: ________\n'
-        + '            _________________________  Mayo Clinic Date: ________\n\n'
+        + '            _________________________  [HEALTH SYSTEM] Date: ________\n\n'
         + 'TEMPLATE ONLY. Review with legal and compliance before execution.\n';
 
-  } else if (type === 'rep') {
-    title = 'REP Study Protocol \u2014 Rochester Epidemiology Project';
-    doc = 'ROCHESTER EPIDEMIOLOGY PROJECT (REP)\n'
-        + 'NEMT MATCHED-COHORT STUDY PROTOCOL \u2014 DRAFT\n'
+  } else if (type === 'outcomes_study') {
+    title = 'Outcomes Attribution Study Design \u2014 EHR-Linked Matched Cohort';
+    doc = 'EHR-LINKED MATCHED-COHORT STUDY PROTOCOL\n'
+        + 'NEMT OUTCOMES ATTRIBUTION STUDY \u2014 DRAFT\n'
         + LINE + '\n\n'
         + 'PI:       [TO BE DESIGNATED \u2014 Suggest: CMO or VP Community Health]\n'
         + 'Co-I:     [Community Engagement, Biostatistics, Quality]\n'
         + 'Date:     ' + today + '\n'
-        + 'REP data linkage request to be submitted at program launch\n\n'
+        + 'EHR data access request to be submitted at program launch\n\n'
         + LINE + '\n'
         + 'STUDY RATIONALE\n'
         + LINE + '\n\n'
-        + 'The Rochester Epidemiology Project provides longitudinal medical\n'
-        + 'record linkage for Olmsted County residents since 1966 \u2014 a resource\n'
-        + 'unmatched by any other U.S. health system. NEMT research anchored\n'
-        + 'to REP data will produce national-quality evidence and is publishable\n'
-        + 'in Tier 1 journals (JAMA, NEJM, Health Affairs).\n\n'
-        + 'The existing evidence gap: Chaiyachati 2018 found no sig. reduction\n'
-        + 'in missed appointments due to low uptake. A REP-linked study can\n'
-        + 'address this by controlling for program design quality, enrollment\n'
-        + 'intensity, and patient-level adherence factors.\n\n'
+        + 'Your health system EHR provides longitudinal patient records\n'
+        + 'that can support a rigorous NEMT outcomes study replicating the\n'
+        + 'Berkowitz et al. (2022) high-dimensional propensity score approach\n'
+        + '(Health Affairs 41(3):406-413). Such a study is publishable in Tier 1\n'
+        + 'journals (JAMA, Health Affairs, NEJM Catalyst).\n\n'
+        + 'The existing evidence gap: Berkowitz 2022 found NEMT increased\n'
+        + 'outpatient visits (+9.2/person/year) but was not cost-saving in the\n'
+        + 'short term. A targeted study can isolate NEMT impact on TCM completion\n'
+        + 'and 30-day readmissions, where the causal chain is strongest.\n\n'
         + LINE + '\n'
         + 'STUDY DESIGN\n'
         + LINE + '\n\n'
         + 'Design:        Retrospective matched cohort\n'
-        + 'Population:    Olmsted County LMI ambulatory patients, Mayo Clinic\n'
+        + 'Population:    [Health System] LMI ambulatory patients\n'
         + 'Matching ratio: 1:3 (enrolled : controls)\n'
         + 'Matching vars: Age (\u00b15 yr), primary diagnosis, insurance type,\n'
         + '               prior-year no-show rate, distance from clinic\n'
@@ -3694,8 +3954,8 @@ window.generateMayoDraft = function(type) {
         + LINE + '\n\n'
         + 'Pathway:       Quality Improvement / Program Evaluation\n'
         + 'Exemption:     Likely (45 CFR 46.104(d)(4) \u2014 program evaluation)\n'
-        + 'Confirm:       Mayo IRB at program outset\n'
-        + 'REP request:   Submit data linkage application at 90-day launch\n\n'
+        + 'Confirm:       [Health System] IRB at program outset\n'
+        + 'Data request:  Submit EHR data access application at 90-day launch\n\n'
         + LINE + '\n'
         + 'PUBLICATION PLAN\n'
         + LINE + '\n\n'
@@ -3708,14 +3968,14 @@ window.generateMayoDraft = function(type) {
         + 'Authorship:    CMO or VP Community Health as lead author;\n'
         + '               define roles at study design phase\n'
         + 'Bank acknowledgment: "This study was made possible by the community\n'
-        + 'investment of ' + bank + ' in Olmsted County health equity."\n\n'
+        + 'investment of ' + bank + ' in [Service Area] community health equity."\n\n'
         + LINE + '\n'
-        + 'DRAFT PROTOCOL. Review with IRB and REP administration before submission.\n';
+        + 'DRAFT PROTOCOL. Review with IRB and legal counsel before submission.\n';
 
   } else if (type === 'kpi') {
     title = 'KPI Dashboard & Quarterly Reporting Template';
     doc = 'NEMT PROGRAM \u2014 QUARTERLY KPI DASHBOARD\n'
-        + 'Mayo Clinic in Rochester / Olmsted County\n'
+        + '[Health System] / [Service Area]\n'
         + LINE + '\n\n'
         + 'Reporting Period: Q___ 20___\n'
         + 'Report Date: ' + today + '\n'
